@@ -1,0 +1,6 @@
+{
+ "uuid": "appletEditor@dalcde",
+ "name": "Applet Editor",
+ "description": "Provides a simple GUI for enabling or disabling applets",
+ "icon": "gnome-panel"
+}

@@ -1,0 +1,6 @@
+{
+ "uuid": "lock@dalcde",
+ "name": "Num Lock/Caps Lock indicator",
+ "description": "Shows whether caps lock/num lock is on",
+ "icon": "numlock-enabled"
+}

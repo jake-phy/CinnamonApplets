@@ -1,0 +1,6 @@
+{
+ "uuid": "calculator@dalcde",
+ "name": "Calculator",
+ "description": "A calculator applet that shows an applet when pressed",
+ "icon": "accessories-calculator"
+}

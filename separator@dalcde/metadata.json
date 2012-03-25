@@ -1,0 +1,6 @@
+{
+ "uuid": "separator@dalcde",
+ "name": "Separator",
+ "description": "Creates a separator between applets",
+ "icon": "window-close"
+}

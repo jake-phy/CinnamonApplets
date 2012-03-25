@@ -1,0 +1,6 @@
+{
+ "uuid": "takeoffLauncher@dalcde",
+ "name": "Takeoff Launcher",
+ "description": "Takeoff Launcher similar to that in KDE",
+ "icon": "gnome-panel-launcher"
+}
