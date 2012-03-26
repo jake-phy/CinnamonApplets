@@ -1,0 +1,6 @@
+{
+ "uuid": "timer@dalcde",
+ "name": "Timer",
+ "description": "Timer applet for Cinnamon",
+ "icon": "time-admin"
+}
