@@ -728,11 +728,11 @@ MyApplet.prototype = {
                 let windowReference = this._windows[i];
                 let menuReference = this._windows[i].rightClickMenu;
                 let title = windowReference.getDisplayTitle();
-                
+
                 if (state == 'minimize') {
                     windowReference._label.set_text("["+ title +"]");
                     menuReference.itemMinimizeWindow.label.set_text(_("Restore"));
-                    
+
                     return;
                 } else if (state == 'map') {
                     windowReference._label.set_text(title);

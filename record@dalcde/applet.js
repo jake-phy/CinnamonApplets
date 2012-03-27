@@ -85,7 +85,7 @@ MyApplet.prototype = {
 	let location = queryLocation(event.get_time());
 	if (location == -1){
 	}else{
-           GLib.spawn_command_line_async('recordmydesktop' + location);
+           GLib.spawn_command_line_async('recordmydesktop --no-frame' + location);
 	}
     }
 };
