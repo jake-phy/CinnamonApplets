@@ -4,11 +4,35 @@ const Cinnamon = imports.gi.Cinnamon;
 const Gtk = imports.gi.Gtk;
 const St = imports.gi.St;
 const Util = imports.misc.util;
-
+const Lang = imports.lang;
 const Gettext = imports.gettext.domain('cinnamon-applets');
 const _ = Gettext.gettext;
 
 let appsys = Cinnamon.AppSystem.get_default();
+
+function TabChooser(){
+    this._init();
+}
+
+TabChooser.prototype = {
+    _init: function(){
+        this.actor = new St.BoxLayout();
+    },
+
+    addItem: function(tab){
+
+    }
+}
+
+function TakeoffTab(dir){
+    this._init();
+}
+
+TakeoffTab.prototype = {
+    _init: function(){
+
+    }
+}
 
 function TakeoffLauncher(){
     this._init();
@@ -23,28 +47,30 @@ TakeoffLauncher.prototype = {
         this.actor.add_actor(this.chooser.actor);
 
         this.tab = new TakeoffTab(null);
-        this.add(tab);
+        this.add(this.tab);
         this.open = false;
     },
 
     add: function(tab){
-        this.actor.add(tab);
-        this.chooser.addItem(tab); 
-    }
+        this.actor.add_actor(this.tab);
+        this.chooser.addItem(this.tab); 
+    },
 
     toggle: function(){
         if (this.open){
+            this.open = false;
             this.actor.show();
             Tweener.addTween(this.actor, {opacity: 255,
                                           time: 0.1,
                                           transition: "easeOutQuad"});
         } else {
+            this.open = true;
             Tweener.addTween(this.actor, {opacity: 255,
                                           time: 0.1,
                                           transition: "easeOutQuad",
                                           onComplete: Lang.bind(this, 
                                                                 function(){
-                                                                    this.actor.hide()
+                                                                    this.actor.hide();
                                                                 })});
 
         }
@@ -58,7 +84,9 @@ function MyApplet(orientation){
 MyApplet.prototype = {
     __proto__: Applet.TextIconApplet.prototype,
 
-    _init: function(){
+    _init: function(orientation){
+        Applet.TextIconApplet.prototype._init.call(this, orientation);
+
         try {
             this.set_applet_tooltip(_("Takeoff Launcher"));
 

@@ -235,6 +235,12 @@ AppMenuButton.prototype = {
         }));
         this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
         
+        this._updateCaptionId = this.metaWindow.connect('notify::title', Lang.bind(this, function () {
+            let title = this.getDisplayTitle();
+            this._label.set_text(title);
+            if (this._tooltip) this._tooltip.set_text(title);
+        }));
+
         this.hoverMenu = new ThumbnailPreview.AppThumbnailHoverMenu(this.actor, this.metaWindow, orientation);
         this.hoverController = new ThumbnailPreview.HoverMenuController(this.actor, this.hoverMenu);
 
