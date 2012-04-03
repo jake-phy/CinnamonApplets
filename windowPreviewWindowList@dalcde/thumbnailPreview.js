@@ -178,7 +178,7 @@ PopupMenuAppSwitcherItem.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
     _init: function (metaWindow, app, params) {
-        params = Params.parse(params, { hover: false });
+        params = Params.parse(params, { hover: false, reactive: true });
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, params);
 
         this.metaWindow = metaWindow;
@@ -192,9 +192,7 @@ PopupMenuAppSwitcherItem.prototype = {
                                                can_focus: true,
                                                vertical: false});
         this.appThumbnails = {};
-        this.divider = new St.Bin({ style_class: 'separator',
-                                    y_fill: true });
-        this.appContainer.add_actor(this.divider);
+
         this._refresh();
 
         this.addActor(this.appContainer);
@@ -257,14 +255,6 @@ PopupMenuAppSwitcherItem.prototype = {
                 this.appThumbnails[win].thumbnail.destroy();
                 delete this.appThumbnails[win];
             }
-        }
-
-        // Show the divider if there is more than one window belonging to this app
-        if (Object.keys(this.appThumbnails).length > 0) {
-            this.divider.show();
-	}
-         else {
-            this.divider.hide();
         }
     }
 };
@@ -392,7 +382,7 @@ WindowThumbnail.prototype = {
     },
     _onButtonRelease: function(actor, event) {
         if ( Cinnamon.get_event_state(event) & Clutter.ModifierType.BUTTON1_MASK ) {
-        this.metaWindow.delete(global.get_current_time());
+            this.metaWindow.delete(global.get_current_time());
         }
 	this._refresh
     },
