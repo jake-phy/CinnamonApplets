@@ -595,12 +595,13 @@ MyApplet.prototype = {
            this._activeContainer = null;
            let monitorHeight = Main.layoutManager.primaryMonitor.height;
            let applicationsBoxHeight = this.applicationsBox.get_allocation_box().y2-this.applicationsBox.get_allocation_box().y1;
-           let scrollBoxHeight = this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1;
+           let scrollBoxHeight = this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1 - 22;
 //                                    -(this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1);           
            // if (scrollBoxHeight < (0.2*monitorHeight)  &&  (scrollBoxHeight < applicationsBoxHeight)) {
              //    scrollBoxHeight = Math.min(0.2*monitorHeight, applicationsBoxHeight);
             // }
-            this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
+           this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
+           this.categoriesScrollBox.style = "height: " + scrollBoxHeight+"px;";
        } else {
            this.closeApplicationsContextMenus(null, false);
            //this.resetSearch();
