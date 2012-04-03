@@ -322,6 +322,7 @@ SystemBox.prototype = {
 
         this.packageItem = new LeftBoxItem(_("Package Manger"), "synaptic", "Util.spawnCommandLine('gksu synaptic')", this.menu);
         this.control = new LeftBoxItem(_("Control Center"), "gnome-control-center", "Util.spawnCommandLine('gnome-control-center')", this.menu);
+        this.terminal = new LeftBoxItem(_("Terminal"), "terminal", "Util.spawnCommandLine('gnome-terminal')", this.menu);
         this.lock = new LeftBoxItem(_("Lock"), "gnome-lockscreen", "screenSaverProxy.LockRemote()", this.menu);
         this.logout = new LeftBoxItem(_("Logout"), "gnome-logout", "session.LogoutRemote(0)", this.menu);
         this.shutdown = new LeftBoxItem(_("Quit"), "gnome-shutdown", "session.ShutdownRemote()", this.menu);
@@ -329,6 +330,7 @@ SystemBox.prototype = {
  	this.actor.add(this.label);
         this.actor.add(this.packageItem.actor);
         this.actor.add(this.control.actor);
+        this.actor.add(this.terminal.actor);
         this.actor.add(this.lock.actor);
         this.actor.add(this.logout.actor);
         this.actor.add(this.shutdown.actor);
