@@ -5,5 +5,10 @@
       <default>true</default>
       <summary>Whether the right panel shows all applications</summary>
     </key>
+
+    <key type="i" name="application-icon-size">
+      <default>22</default>
+      <summary>The icon size of the application/categories icons</summary>
+    </key>
   </schema>
 </schemalist>

@@ -21,18 +21,20 @@ const Meta = imports.gi.Meta;
 
 const ICON_SIZE = 16;
 const MAX_FAV_ICON_SIZE = 32;
-const CATEGORY_ICON_SIZE = 22;
-const APPLICATION_ICON_SIZE = 22;
 
 const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
 const MENU_SCHEMAS = "org.cinnamon.applets.classicMenu";
 
 let menuSettings = new Gio.Settings({schema: MENU_SCHEMAS});
+const APPLICATION_ICON_SIZE = menuSettings.get_int("application-icon-size");
+
+const AppletDir = imports.ui.appletManager.appletMeta["classicMenu@dalcde"].path;
 
 let appsys = Cinnamon.AppSystem.get_default();
 
 let session = new GnomeSession.SessionManager();
 let screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
+
 
 
 function ApplicationContextMenuItem(appButton, label, action) {
@@ -103,6 +105,7 @@ ApplicationButton.prototype = {
 
         this.actor.add_style_class_name('menu-application-button');
         this.icon = this.app.create_icon_texture(APPLICATION_ICON_SIZE);
+
         this.addActor(this.icon);
         this.label = new St.Label({ text: this.app.get_name(), style_class: 'menu-application-button-label' });
         this.addActor(this.label);
@@ -186,8 +189,13 @@ function CategoryButton(app) {
 }
 
 CategoryButton.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
     _init: function(category) {
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {hover: false});
         var label;
+        this.actor.add_style_class_name('menu-application-button');
+
         if (category){
            let icon = category.get_icon();
            if (icon && icon.get_names)
@@ -196,16 +204,13 @@ CategoryButton.prototype = {
                this.icon_name = "";
            label = category.get_name();
         } else label = _("All Applications");
-        this.actor = new St.Button({ reactive: true, label: label, style_class: 'menu-category-button', x_align: St.Align.START });
-        this.actor._delegate = this;
         this.buttonbox = new St.BoxLayout();
         this.label = new St.Label({ text: label, style_class: 'menu-category-button-label' });
         if (category && this.icon_name){
-            this.icon = new St.Icon({icon_name: this.icon_name, icon_size: CATEGORY_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-           this.buttonbox.add_actor(this.icon);
+            this.icon = new St.Icon({icon_name: this.icon_name, icon_size: APPLICATION_ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
+            this.addActor(this.icon);
         }
-        this.buttonbox.add_actor(this.label);
-        this.actor.set_child(this.buttonbox);
+        this.addActor(this.label);
     }
 };
 Signals.addSignalMethods(CategoryButton.prototype);
@@ -356,7 +361,7 @@ FavButton.prototype = {
         this.vertBox.add_actor(this.descriptionLabel);
 
         this.horBox = new St.BoxLayout();
-        this.horBox.style = "width: 233px;";
+        this.horBox.style = "width: 225px;";
         this.horBox.add_actor(this.icon);
         this.horBox.add_actor(this.vertBox);
 
@@ -496,8 +501,8 @@ ApplicationsPanel.prototype = {
             this._selectedItemIndex = null;
             this._activeContainer = null;
             let scrollBoxHeight = this.leftBox.get_allocation_box().y2-this.leftBox.get_allocation_box().y1 - (this.searchBox.get_allocation_box().y2-this.searchBox.get_allocation_box().y1) - (this.rightHeader.get_allocation_box().y2 - this.rightHeader.get_allocation_box().y1);
-            this.applicationsScrollBox.style = "height: "+scrollBoxHeight+"px;";
-            this.categoriesScrollBox.style = "height: " + scrollBoxHeight+"px;";
+            this.applicationsScrollBox.style = "width: 303px; height: "+scrollBoxHeight+"px;";
+            this.categoriesScrollBox.style = "width: 190px; height: " + scrollBoxHeight+"px;";
         } else
             this.closeApplicationsContextMenus(null, false);
     },
@@ -592,7 +597,7 @@ ApplicationsPanel.prototype = {
         })); 
         
         this._allAppsCategoryButton = new CategoryButton(null);
-        this._allAppsCategoryButton.actor.connect('clicked', Lang.bind(this, function() {
+        this._allAppsCategoryButton.actor.connect('button-release-event', Lang.bind(this, function() {
             this._select_category(null, this._allAppsCategoryButton);
         }));
         this._addEnterEvent(this._allAppsCategoryButton, Lang.bind(this, function() {
@@ -630,7 +635,7 @@ ApplicationsPanel.prototype = {
                     this._loadCategory(dir);
                     if (this.applicationsByCategory[dir.get_menu_id()].length>0){
                        let categoryButton = new CategoryButton(dir);
-                       categoryButton.actor.connect('clicked', Lang.bind(this, function() {
+                       categoryButton.actor.connect('button-release-event', Lang.bind(this, function() {
                          this._select_category(dir, categoryButton);
                       }));
                       this._addEnterEvent(categoryButton, Lang.bind(this, function() {
@@ -709,15 +714,13 @@ ApplicationsPanel.prototype = {
         this.categoriesApplicationsBox = new CategoriesApplicationsBox();
 
         this.categoriesScrollBox = new St.ScrollView({x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox'});
-        this.categoriesBox = new St.BoxLayout({ style_class: 'menu-categories-box', vertical: true });
-        this.categoriesBox.style = "width: 140px";
+        this.categoriesBox = new St.BoxLayout({ style_class: 'menu-applications-box', vertical: true });
         this.categoriesScrollBox.add_actor(this.categoriesBox);
         this.categoriesScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         this.categoriesApplicationsBox.actor.add_actor(this.categoriesScrollBox);
 
         this.applicationsScrollBox = new St.ScrollView({ x_fill: true, y_fill: false, y_align: St.Align.START, style_class: 'vfade menu-applications-scrollbox' });
         this.applicationsBox = new St.BoxLayout({ style_class: 'menu-applications-box', vertical:true });
-        this.applicationsBox.style = "width: 200px";
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.applicationsScrollBox.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         this.categoriesApplicationsBox.actor.add_actor(this.applicationsScrollBox);
@@ -988,7 +991,9 @@ MyApplet.prototype = {
                 }
             }));    
 
+            this.menu_settings_item = new Applet.MenuItem(_("Menu Settings"), "gnome-settings", function(){Util.spawnCommandLine(AppletDir + "/cinnamon-classic-menu-settings");});
             this.edit_menu_item = new Applet.MenuItem(_("Edit menu"), Gtk.STOCK_EDIT, Lang.bind(this, this._launch_editor));
+            this._applet_context_menu.addMenuItem(this.menu_settings_item);
             this._applet_context_menu.addMenuItem(this.edit_menu_item);
         }
         catch (e) {
@@ -1089,22 +1094,15 @@ MyApplet.prototype = {
     },
 
     _positionChangeBin: function(){
-        if (this.menuInited)
-            this.changeBin.set_position(this.rightContent.get_allocation_box().x2 - this.changeBin.get_allocation_box().get_width() - 15, this.rightHeader.get_allocation_box().y1);
-        else if (!this.right_app)
-            this.changeBin.set_position(this.rightContent.get_allocation_box().x2 - this.changeBin.get_allocation_box().get_width() , this.rightHeader.get_allocation_box().y1);
-        else{
-            this.changeBin.set_position(this.rightContent.get_allocation_box().x2 - 15, this.rightHeader.get_allocation_box().y1);
-            this.menuInited = true;
-        }
+        this.changeBin.set_position(this.rightContent.get_allocation_box().x2 - this.changeBin.get_allocation_box().get_width() - 15, this.rightHeader.get_allocation_box().y1);
     },
 
     _display : function() {
         this._activeContainer = null;
 
-        let section = new PopupMenu.PopupMenuSection();
+        section = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(section);
-        
+
         let leftPane = new St.BoxLayout({ vertical: true });
 
         this.leftBox = new St.BoxLayout({ vertical: true});
@@ -1161,7 +1159,6 @@ MyApplet.prototype = {
         }));
   
         section.actor.add_actor(this.mainBox);
-        this.menuInited = false;
         this._changeRight();
     },
 };
