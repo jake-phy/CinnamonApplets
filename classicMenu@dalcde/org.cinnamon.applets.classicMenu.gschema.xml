@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema path="/org/cinnamon/applets/classicMenu/" id="org.cinnamon.applets.classicMenu" gettext-domain="@GETTEXT_PACKAGE@">
+    <key type="b" name="right-app">
+      <default>true</default>
+      <summary>Whether the right panel shows all applications</summary>
+    </key>
+  </schema>
+</schemalist>

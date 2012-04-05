@@ -1,0 +1,14 @@
+.largeBold {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.favorites-label {
+    font-weight: bold;
+    padding-top: 2px;
+    padding-bottom: 10px;
+}
+
+.search-label{
+    padding-top: 6px;
+}
