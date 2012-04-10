@@ -24,6 +24,49 @@ const CATEGORIES_ICON_SIZE = menuSettings.get_int("categories-icon-size");
 
 let appsys = Cinnamon.AppSystem.get_default();
 
+function SearchItem(provider, string, parent){
+    this._init(provider, string, parent);
+}
+
+SearchItem.prototype = {
+    __proto__: PopupMenu.PopupMenuItem.prototype,
+
+    _init: function(provider, string, parent){
+        PopupMenu.PopupMenuItem.prototype._init.call(this, "Search " + provider + " for " + string);
+        this.actor.set_style_class_name("menu-category-button");
+        this.provider = provider;
+        this.string = string;
+        this.parent = parent;
+    },
+
+    setActive: function(active){
+        if (active)
+            this.actor.set_style_class_name('menu-category-button-selected');
+        else
+            this.actor.set_style_class_name('menu-category-button');
+    },
+
+    activate: function(event){
+        while (this.string.indexOf(" ")!= -1){
+            this.string = this.string.replace(" ", "%20");
+        }
+
+        switch(this.provider){
+        case "Google":
+            Util.spawnCommandLine("firefox https://www.google.com/cse?cx=002683415331144861350%3Atsq8didf9x0&ie=utf-8&sa=Search&q=" + this.string);
+            break;
+        case "DuckDuckGo":
+            Util.spawnCommandLine("firefox https://duckduckgo.com/?t=lm&q=" + this.string);
+            break;
+        case "Wikipedia":
+            Util.spawnCommandLine("firefox https://en.wikipedia.org/wiki/Special:Search?search=" + this.string);
+            break;
+        }
+        this.parent.menu.toggle();
+    }
+}
+
+
 function ApplicationContextMenuItem(appButton, label, action) {
     this._init(appButton, label, action);
 }
@@ -542,20 +585,12 @@ ApplicationsPanel.prototype = {
         }
     },
     
-    _onApplicationButtonRealized: function(actor) {
-        if (actor.get_width() > this._applicationsBoxWidth){
-            this._applicationsBoxWidth = actor.get_width();
-            this.applicationsBox.set_width(this._applicationsBoxWidth);
-        }
-    },
-    
     _displayButtons: function(apps){
          if (apps){
             for (var i=0; i<apps.length; i++) {
                let app = apps[i];
                if (!this._applicationsButtons[app]){
                   let applicationButton = new ApplicationButton(this, app);
-                  applicationButton.actor.connect('realize', Lang.bind(this, this._onApplicationButtonRealized));
                   this._addEnterEvent(applicationButton, Lang.bind(this, function() {
                       this._clearSelections(this.applicationsBox);
                       applicationButton.actor.style_class = "menu-category-button-selected";
@@ -567,6 +602,15 @@ ApplicationsPanel.prototype = {
                this.applicationsBox.add_actor(this._applicationsButtons[app].menu.actor);
             }
          }
+    },
+
+    _displayNoResult: function(string){
+        let googleSearch = new SearchItem("Google", string, this);
+        this.applicationsBox.add_actor(googleSearch.actor);
+        let duckSearch = new SearchItem("DuckDuckGo", string, this);
+        this.applicationsBox.add_actor(duckSearch.actor);
+        let wikiSearch = new SearchItem("Wikipedia", string, this);
+        this.applicationsBox.add_actor(wikiSearch.actor);
     },
 
     _setCategoriesButtonActive: function(active) {         
@@ -674,9 +718,12 @@ ApplicationsPanel.prototype = {
         }
         
         var appResults = this._listApplications(null, pattern);
-        
         this._clearApplicationsBox();
-        this._displayButtons(appResults);
+
+        if (appResults == ""){
+            this._displayNoResult(this.searchEntryText.get_text());
+        } else
+            this._displayButtons(appResults);
         
         let applicationsBoxChilren = this.applicationsBox.get_children();
         if (applicationsBoxChilren.length>0){
