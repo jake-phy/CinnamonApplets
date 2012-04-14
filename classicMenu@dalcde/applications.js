@@ -22,7 +22,10 @@ let menuSettings = new Gio.Settings({schema: MENU_SCHEMAS});
 const APPLICATION_ICON_SIZE = menuSettings.get_int("application-icon-size");
 const CATEGORIES_ICON_SIZE = menuSettings.get_int("categories-icon-size");
 
+const BROWSER = imports.gi.GConf.Client.get_default().get_string('/desktop/gnome/applications/browser/exec');
 let appsys = Cinnamon.AppSystem.get_default();
+
+const AppletDir = imports.ui.appletManager.appletMeta["classicMenu@dalcde"].path;
 
 function SearchItem(provider, string, parent){
     this._init(provider, string, parent);
@@ -53,13 +56,13 @@ SearchItem.prototype = {
 
         switch(this.provider){
         case "Google":
-            Util.spawnCommandLine("firefox https://www.google.com/cse?cx=002683415331144861350%3Atsq8didf9x0&ie=utf-8&sa=Search&q=" + this.string);
+            Util.spawnCommandLine(BROWSER + " https://www.google.com/cse?cx=002683415331144861350%3Atsq8didf9x0&ie=utf-8&sa=Search&q=" + this.string);
             break;
         case "DuckDuckGo":
-            Util.spawnCommandLine("firefox https://duckduckgo.com/?t=lm&q=" + this.string);
+            Util.spawnCommandLine(BROWSER + " https://duckduckgo.com/?t=lm&q=" + this.string);
             break;
         case "Wikipedia":
-            Util.spawnCommandLine("firefox https://en.wikipedia.org/wiki/Special:Search?search=" + this.string);
+            Util.spawnCommandLine(BROWSER + " https://en.wikipedia.org/wiki/Special:Search?search=" + this.string);
             break;
         }
         this.parent.menu.toggle();
@@ -85,29 +88,32 @@ ApplicationContextMenuItem.prototype = {
 
     activate: function (event) {
         switch (this._action){
-            case "add_to_panel":
-                let settings = new Gio.Settings({ schema: 'org.cinnamon' });
-                let desktopFiles = settings.get_strv('panel-launchers');
-                desktopFiles.push(this._appButton.app.get_id());
-                settings.set_strv('panel-launchers', desktopFiles);
-                break;
-            case "add_to_desktop":
-                let file = Gio.file_new_for_path(this._appButton.app.get_app_info().get_filename());
-                let destFile = Gio.file_new_for_path(USER_DESKTOP_PATH+"/"+this._appButton.app.get_id());
-                try{
-                    file.copy(destFile, 0, null, function(){});
-                    // Need to find a way to do that using the Gio library, but modifying the access::can-execute attribute on the file object seems unsupported
-                    Util.spawnCommandLine("chmod +x \""+USER_DESKTOP_PATH+"/"+this._appButton.app.get_id()+"\"");
-                }catch(e){
-                    global.log(e);
-                }
-                break;
-            case "add_to_favorites":
-                AppFavorites.getAppFavorites().addFavorite(this._appButton.app.get_id());
-                break;
-            case "remove_from_favorites":
-                AppFavorites.getAppFavorites().removeFavorite(this._appButton.app.get_id());
-                break;
+        case "add_to_panel":
+            let settings = new Gio.Settings({ schema: 'org.cinnamon' });
+            let desktopFiles = settings.get_strv('panel-launchers');
+            desktopFiles.push(this._appButton.app.get_id());
+            settings.set_strv('panel-launchers', desktopFiles);
+            break;
+        case "add_to_desktop":
+            let file = Gio.file_new_for_path(this._appButton.app.get_app_info().get_filename());
+            let destFile = Gio.file_new_for_path(USER_DESKTOP_PATH+"/"+this._appButton.app.get_id());
+            try{
+                file.copy(destFile, 0, null, function(){});
+                // Need to find a way to do that using the Gio library, but modifying the access::can-execute attribute on the file object seems unsupported
+                Util.spawnCommandLine("chmod +x \""+USER_DESKTOP_PATH+"/"+this._appButton.app.get_id()+"\"");
+            }catch(e){
+                global.log(e);
+            }
+            break;
+        case "add_to_favorites":
+            AppFavorites.getAppFavorites().addFavorite(this._appButton.app.get_id());
+            break;
+        case "remove_from_favorites":
+            AppFavorites.getAppFavorites().removeFavorite(this._appButton.app.get_id());
+            break;
+        case "uninstall":
+            Util.spawnCommandLine(AppletDir + "/remove.py " + this._appButton.app.get_id());
+            break;
         }
         this._appButton.actor.grab_key_focus();
         this._appButton.toggleMenu();
@@ -204,6 +210,8 @@ ApplicationButton.prototype = {
                 menuItem = new ApplicationContextMenuItem(this, _("Add to favorites"), "add_to_favorites");
                 this.menu.addMenuItem(menuItem);
             }
+            menuItem = new ApplicationContextMenuItem(this, _("Uninstall this program"), "uninstall");
+            this.menu.addMenuItem(menuItem);
         }
         this.menu.toggle();
     },
