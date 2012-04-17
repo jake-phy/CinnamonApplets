@@ -112,7 +112,7 @@ ApplicationContextMenuItem.prototype = {
             AppFavorites.getAppFavorites().removeFavorite(this._appButton.app.get_id());
             break;
         case "uninstall":
-            Util.spawnCommandLine(AppletDir + "/remove.py " + this._appButton.app.get_id());
+            Util.spawnCommandLine('gksu ' + AppletDir + "/remove.py " + this._appButton.app.get_id());
             break;
         }
         this._appButton.actor.grab_key_focus();
