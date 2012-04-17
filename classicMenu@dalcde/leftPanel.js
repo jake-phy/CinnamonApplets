@@ -9,14 +9,57 @@ const Util = imports.misc.util;
 const DND = imports.ui.dnd;
 const ModalDialog = imports.ui.modalDialog;
 const Mainloop = imports.mainloop;
-
 const MENU_SCHEMAS = "org.cinnamon.applets.classicMenu";
+const Cinnamon = imports.gi.Cinnamon;
+
 let menuSettings = new Gio.Settings({schema: MENU_SCHEMAS});
+let appSys = Cinnamon.AppSystem.get_default();
 
 const LEFT_ICON_SIZE = menuSettings.get_int("left-icon-size");
+const PACKAGE_MANAGER = menuSettings.get_string("package-manager");
 
 let session = new GnomeSession.SessionManager();
 let screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
+
+function PackageItem(parent){
+    this._init(parent);
+}
+
+PackageItem.prototype = {
+    __proto__: PopupMenu.PopupBaseMenuItem.prototype,
+
+    _init: function(parent){
+        PopupMenu.PopupBaseMenuItem.prototype._init.call(this);
+	this.app = appSys.lookup_settings_app(PACKAGE_MANAGER);
+	if (!this.app) this.app = appSys.lookup_app(PACKAGE_MANAGER);
+
+	this.icon = this.app.create_icon_texture(LEFT_ICON_SIZE);
+	let name = this.app.get_name();
+        this.actor.set_style_class_name('menu-category-button');
+	this.parent = parent;
+	this.label = new St.Label({text: " " + name});
+	this.addActor(this.icon);
+	this.addActor(this.label);
+    },
+
+    setActive: function(active){
+        if (active)
+            this.actor.set_style_class_name('menu-category-button-selected');
+        else
+            this.actor.set_style_class_name('menu-category-button');
+    },
+
+    _onButtonReleaseEvent: function(actor, event){
+        if (event.get_button()==1){
+            this.activate(event);
+        }
+    },
+
+    activate: function(event){
+	this.app.open_new_window(-1);
+	this.parent.close();
+    }
+}
 
 function AddPlacesDialog(pos, string) {
     this._init(pos, string);
@@ -362,12 +405,12 @@ SystemBox.prototype = {
     addButtons: function(){
 	this.label = new St.Label({text: "System", style_class: 'largeBold'});
 
-        this.packageItem = new LeftBoxItem(_("Package Manager"), "synaptic", "Util.spawnCommandLine('gksu synaptic')", this.menu, false);
-        this.control = new LeftBoxItem(_("Control Center"), "gnome-control-center", "Util.spawnCommandLine('gnome-control-center')", this.menu, false);
-        this.terminal = new LeftBoxItem(_("Terminal"), "terminal", "Util.spawnCommandLine('gnome-terminal')", this.menu, false);
-        this.lock = new LeftBoxItem(_("Lock"), "gnome-lockscreen", "screenSaverProxy.LockRemote()", this.menu, false);
-        this.logout = new LeftBoxItem(_("Logout"), "gnome-logout", "session.LogoutRemote(0)", this.menu, false);
-        this.shutdown = new LeftBoxItem(_("Quit"), "gnome-shutdown", "session.ShutdownRemote()", this.menu, false);
+	this.packageItem = new PackageItem(this.menu);
+        this.control = new LeftBoxItem(_("Control Center"), "gnome-control-center", "Util.spawnCommandLine('gnome-control-center')", this.menu);
+        this.terminal = new LeftBoxItem(_("Terminal"), "terminal", "Util.spawnCommandLine('gnome-terminal')", this.menu);
+        this.lock = new LeftBoxItem(_("Lock"), "gnome-lockscreen", "screenSaverProxy.LockRemote()", this.menu);
+        this.logout = new LeftBoxItem(_("Logout"), "gnome-logout", "session.LogoutRemote(0)", this.menu);
+        this.shutdown = new LeftBoxItem(_("Quit"), "gnome-shutdown", "session.ShutdownRemote()", this.menu);
 
  	this.actor.add(this.label);
         this.actor.add(this.buttons);

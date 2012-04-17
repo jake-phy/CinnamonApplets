@@ -30,5 +30,10 @@
       <default>[ 'Computer::computer::computer:///', 'Home Folder::gnome-fs-home:: ', 'Network::network::network:///', 'Desktop::desktop::Desktop', 'Trash::user-trash::trash:///' ]</default>
       <summary>List of places, in the form label::icon::destination</summary>
     </key>
+
+    <key type="s" name="package-manager">
+      <default>'synaptic.desktop'</default>
+      <summary>Desktop file of package manager</summary>
+    </key>
   </schema>
 </schemalist>
