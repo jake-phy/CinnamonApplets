@@ -5,6 +5,7 @@ const Clutter = imports.gi.Clutter;
 const AppFavorites = imports.ui.appFavorites;
 const Gtk = imports.gi.Gtk;
 const Gio = imports.gi.Gio;
+const DND = imports.ui.dnd;
 
 const MENU_SCHEMAS = "org.cinnamon.applets.classicMenu";
 
@@ -45,6 +46,7 @@ FavButton.prototype = {
         this.actor.set_child(this.horBox);
 
         this.setActive(false);
+	this._draggable = DND.makeDraggable(this.actor);
     },
 
     _onButtonReleaseEvent: function(actor, event){
@@ -66,7 +68,7 @@ FavButton.prototype = {
     activate: function(){
         this.app.open_new_window(-1);
         this.menu.close();
-    }
+    }    
 }
 
 function FavBox(menu, leftBox, rightHeader){
