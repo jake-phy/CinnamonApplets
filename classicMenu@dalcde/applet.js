@@ -72,7 +72,7 @@ MyApplet.prototype = {
                 }
             }));    
 
-            this.menu_settings_item = new Applet.MenuItem(_("Menu Settings"), "gnome-settings", function(){Util.spawnCommandLine(AppletDir + "/cinnamon-classic-menu-settings");});
+            this.menu_settings_item = new Applet.MenuItem(_("Menu Settings"), "gnome-settings", function(){Util.spawnCommandLine(AppletDir + "/cinnamon-classic-menu-settings.py");});
             this.edit_menu_item = new Applet.MenuItem(_("Edit menu"), Gtk.STOCK_EDIT, Lang.bind(this, this._launch_editor));
             this._applet_context_menu.addMenuItem(this.menu_settings_item);
             this._applet_context_menu.addMenuItem(this.edit_menu_item);

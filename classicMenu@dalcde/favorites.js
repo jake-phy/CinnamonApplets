@@ -3,6 +3,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
 const AppFavorites = imports.ui.appFavorites;
+const PopupMenu = imports.ui.popupMenu;
 const Gtk = imports.gi.Gtk;
 const Gio = imports.gi.Gio;
 const DND = imports.ui.dnd;
@@ -13,7 +14,7 @@ let menuSettings = new Gio.Settings({schema: MENU_SCHEMAS});
 
 const FAV_ICON_SIZE = menuSettings.get_int("favorites-icon-size");
 
-let appsys = Cinnamon.AppSystem.get_default();
+let appSys = Cinnamon.AppSystem.get_default();
 
 function FavButton(app, menu){
     this._init(app, menu);
@@ -71,6 +72,41 @@ FavButton.prototype = {
     }    
 }
 
+function FavSubBox(menu){
+    this._init(menu);
+}
+
+FavSubBox.prototype = {
+    _init: function(menu){
+        this.menu = menu;
+        this.actor = new St.BoxLayout();
+	this.box = new St.BoxLayout();
+    },
+
+    load: function(apps){
+        let leftCol = new St.BoxLayout({vertical: true});
+        let rightCol = new St.BoxLayout({vertical: true});
+        this.actor.remove_actor(this.box);
+        this.box = new St.BoxLayout();
+        this.box.add_actor(leftCol);
+        this.box.add_actor(rightCol);
+
+        for (let i = 0; i < apps.length; i++){
+            let j = i % 2
+            let app = appSys.lookup_app(apps[i]);
+            if (!app) app = appSys.lookup_settings_app(apps[i]);
+            if (app){
+                let button = new FavButton(app, this.menu);
+                if (j == 0)
+                    leftCol.add_actor(button.actor);
+                else
+                    rightCol.add_actor(button.actor);
+            }
+        }
+	this.actor.add_actor(this.box);
+    }
+}
+
 function FavBox(menu, leftBox, rightHeader){
     this._init(menu, leftBox, rightHeader);
 }
@@ -90,31 +126,31 @@ FavBox.prototype = {
 
         this._load();
         this.scrollBox.add_actor(this.box);
-        global.settings.connect("changed::favorite-apps", Lang.bind(this, this._load));
+        menuSettings.connect("changed::favorites-list", Lang.bind(this, this._load));
     },
 
     _load: function(){
-        let favList = global.settings.get_strv('favorite-apps');
-        let leftCol = new St.BoxLayout({vertical: true});
-        let rightCol = new St.BoxLayout({vertical: true});
-        let appSys = Cinnamon.AppSystem.get_default();
+        let favList = menuSettings.get_string('favorites-list');
         this.scrollBox.remove_actor(this.box);
-        this.box = new St.BoxLayout();
-        this.box.add_actor(leftCol);
-        this.box.add_actor(rightCol);
-
-        for (let i = 0; i < favList.length; i++){
-            let j = i % 2
-            let app = appSys.lookup_app(favList[i]);
-            if (!app) app = appSys.lookup_settings_app(favList[i]);
-            if (app){
-                let button = new FavButton(app, this.menu);
-                if (j == 0)
-                    leftCol.add_actor(button.actor);
-                else
-                    rightCol.add_actor(button.actor);
-            }
-        }
+	this.box.destroy();
+        this.box = new St.BoxLayout({vertical: true});
+	this.subBox = new Array();
+	let favSubList = favList.split("::");
+//loading first section
+	if (favSubList.length != 0){
+	    let sub = new FavSubBox(this.menu);
+	    sub.load(favSubList[0].split(":"));
+	    this.subBox.push(sub);
+	    this.box.add_actor(sub.actor);
+	}
+//loading other sections
+	for (let i = 1; i < favSubList.length; i++){
+	    let sub = new FavSubBox(this.menu);
+	    sub.load(favSubList[i].split(":"));
+	    this.subBox.push(sub);
+	    this.box.add_actor(new PopupMenu.PopupSeparatorMenuItem().actor);
+	    this.box.add_actor(sub.actor);
+	}
         this.scrollBox.add_actor(this.box);
     },
 
