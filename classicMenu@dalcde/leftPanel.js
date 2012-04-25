@@ -369,7 +369,6 @@ PlacesBox.prototype = {
 
         this.buttonList.splice(this._dragPlaceholderPos, 0, source.actor._delegate.string);
         this.buttonList.splice(removePos, 1);
-        global.log(this.buttonList);
         this._clearDragPlaceholder();
         actor.destroy();
 
