@@ -308,6 +308,7 @@ r
   
         section.actor.add_actor(this.mainBox);
         this._changeRight();
+        this.menu.actor.get_allocation_box().x1 = this.actor.get_allocation_box().x1;
     },
 };
 
